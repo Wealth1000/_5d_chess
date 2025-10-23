@@ -1,16 +1,19 @@
-# _5d_chess
 
-A new Flutter project.
+# Multiverse Chess (Flutter Edition)
 
-## Getting Started
+This is a **Flutter-based adaptation** of the open-source project [Multiverse Chess](https://github.com/L0laapk3/multiverse-chess) by **L0laapk3** 
 
-This project is a starting point for a Flutter application.
+## 🎯 Purpose
 
-A few resources to get you started if this is your first Flutter project:
+The goal of this project is to recreate the core mechanics and spirit of 5D Chess within a **cross-platform Flutter environment**, optimized for mobile and desktop use.  
+It is **not a commercial product**
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 💡 Acknowledgement
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This project draws direct inspiration and logic design from [Multiverse Chess](https://github.com/L0laapk3/multiverse-chess) by **L0laapk3**, licensed under the MIT License.  
+Full credit for the original mechanics, rule systems, and implementation ideas goes to the original developers.
+
+## ⚖️ License
+
+This Flutter version is released under the same **MIT License**, in full respect of the original project’s open-source terms.  
+Please refer to the [`LICENSE`]()
