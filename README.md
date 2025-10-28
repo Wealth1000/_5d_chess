@@ -17,3 +17,8 @@ Full credit for the original mechanics, rule systems, and implementation ideas g
 
 This Flutter version is released under the same **MIT License**, in full respect of the original project’s open-source terms.  
 Please refer to the [`LICENSE`](https://github.com/L0laapk3/multiverse-chess)
+
+---
+
+Got an idea for something new? 💭  
+Feel free to suggest or request extra features over on the [**Feature Ideas Board**](FEATURES.md)!
