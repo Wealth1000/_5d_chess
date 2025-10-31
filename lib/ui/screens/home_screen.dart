@@ -1,3 +1,4 @@
+import 'package:_5d_chess/ui/screens/settings_screen.dart';
 import 'package:_5d_chess/ui/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -37,7 +38,9 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Center(
-                child: CustomButton(onPressed: () {}, text: 'Settings'),
+                child: CustomButton(onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                }, text: 'Settings'),
               ),
               const SizedBox(height: 16),
               Center(
