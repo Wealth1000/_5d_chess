@@ -1,27 +1,26 @@
-import 'package:chess_5d/ui/screens/new_game_screen.dart';
-import 'package:chess_5d/ui/screens/settings_screen.dart';
 import 'package:chess_5d/ui/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class NewGameScreen extends StatelessWidget {
+  const NewGameScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '5D Chess',
+          'New Game',
           style: GoogleFonts.orbitron(
             color: Theme.of(context).colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
-            fontSize: 35,
+            fontSize: 24,
           ),
         ),
         toolbarHeight: 70,
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: Center(
         child: Container(
@@ -31,42 +30,23 @@ class HomeScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
               Center(
-                child: CustomButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const NewGameScreen(),
-                      ),
-                    );
-                  },
-                  text: 'New Game',
-                ),
+                child: CustomButton(onPressed: () {}, text: 'Local'),
               ),
               const SizedBox(height: 16),
               Center(
-                child: CustomButton(onPressed: () {}, text: 'Guide'),
+                child: CustomButton(onPressed: () {}, text: 'CPU'),
               ),
               const SizedBox(height: 16),
               Center(
-                child: CustomButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsScreen(),
-                      ),
-                    );
-                  },
-                  text: 'Settings',
-                ),
+                child: CustomButton(onPressed: () {}, text: 'Public'),
               ),
               const SizedBox(height: 16),
               Center(
-                child: CustomButton(onPressed: () {}, text: 'Credits'),
+                child: CustomButton(onPressed: () {}, text: 'Custom'),
               ),
               const SizedBox(height: 16),
               Center(
-                child: CustomButton(onPressed: () {}, text: 'Exit'),
+                child: CustomButton(onPressed: () {}, text: 'Private'),
               ),
             ],
           ),

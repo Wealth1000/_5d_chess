@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class CustomDialogBox extends StatelessWidget {
-
   const CustomDialogBox({
     super.key,
     required this.children,
@@ -9,7 +8,7 @@ class CustomDialogBox extends StatelessWidget {
     this.width = 400,
     this.height,
     this.padding = const EdgeInsets.all(24),
-    this.backgroundColor = const Color(0xF5FFFFFF),
+    this.backgroundColor,
     this.borderRadius = 12,
   });
   final List<Widget> children;
@@ -17,7 +16,7 @@ class CustomDialogBox extends StatelessWidget {
   final double width;
   final double? height;
   final EdgeInsets padding;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final double borderRadius;
 
   @override
@@ -27,7 +26,7 @@ class CustomDialogBox extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: backgroundColor ?? Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(

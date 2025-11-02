@@ -21,7 +21,7 @@ class CustomButton extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: const Color(0xF5FFFFFF),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
@@ -42,7 +42,7 @@ class CustomButton extends StatelessWidget {
               style: GoogleFonts.lato(
                 fontWeight: FontWeight.w800,
                 fontSize: 20,
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),

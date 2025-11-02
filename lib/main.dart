@@ -1,4 +1,5 @@
-import 'package:_5d_chess/ui/screens/home_screen.dart';
+import 'package:chess_5d/core/theme.dart';
+import 'package:chess_5d/ui/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -11,9 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: appTheme,
       home: const HomeScreen(),
     );
   }
