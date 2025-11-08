@@ -4,14 +4,14 @@ import 'package:chess_5d/core/utils.dart';
 import 'package:chess_5d/core/constants.dart';
 
 class ColorPickerDialog extends StatefulWidget {
-  final Color initialColor;
-  final String title;
 
   const ColorPickerDialog({
     super.key,
     required this.initialColor,
     required this.title,
   });
+  final Color initialColor;
+  final String title;
 
   @override
   State<ColorPickerDialog> createState() => _ColorPickerDialogState();
@@ -127,7 +127,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                       _selectedColor = color;
                     });
                   },
-                  child: Container(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: color,
                       border: Border.all(

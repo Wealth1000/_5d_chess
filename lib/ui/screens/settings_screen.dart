@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final ThemeProvider themeProvider;
 
   const SettingsScreen({super.key, required this.themeProvider});
+  final ThemeProvider themeProvider;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();

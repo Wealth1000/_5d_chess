@@ -10,9 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends StatelessWidget {
-  final ThemeProvider themeProvider;
 
   const HomeScreen({super.key, required this.themeProvider});
+  final ThemeProvider themeProvider;
 
   void _showExitDialog(BuildContext context) {
     showDialog(
