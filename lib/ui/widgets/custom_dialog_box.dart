@@ -5,34 +5,45 @@ class CustomDialogBox extends StatelessWidget {
     super.key,
     required this.children,
     this.title,
-    this.width = 400,
+    this.width,
     this.height,
-    this.padding = const EdgeInsets.all(24),
+    this.padding,
     this.backgroundColor,
-    this.borderRadius = 12,
+    this.borderRadius = 16,
   });
   final List<Widget> children;
   final String? title;
-  final double width;
+  final double? width;
   final double? height;
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
   final Color? backgroundColor;
   final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
+    final defaultPadding = padding ?? const EdgeInsets.all(24);
+    final effectiveWidth = width ?? double.infinity;
+
     return Center(
       child: Container(
-        width: width,
+        width: effectiveWidth == double.infinity ? null : effectiveWidth,
+        constraints: effectiveWidth == double.infinity
+            ? const BoxConstraints()
+            : null,
         height: height,
         decoration: BoxDecoration(
           color: backgroundColor ?? Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(borderRadius),
+          border: Border.all(
+            color: Theme.of(
+              context,
+            ).colorScheme.secondary.withValues(alpha: 0.1),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -43,10 +54,10 @@ class CustomDialogBox extends StatelessWidget {
             if (title != null)
               Padding(
                 padding: EdgeInsets.only(
-                  top: padding.top,
-                  left: padding.left,
-                  right: padding.right,
-                  bottom: padding.bottom / 2,
+                  top: defaultPadding.top,
+                  left: defaultPadding.left,
+                  right: defaultPadding.right,
+                  bottom: defaultPadding.bottom / 2,
                 ),
                 child: Text(
                   title!,
@@ -59,11 +70,11 @@ class CustomDialogBox extends StatelessWidget {
             Padding(
               padding: title != null
                   ? EdgeInsets.only(
-                      left: padding.left,
-                      right: padding.right,
-                      bottom: padding.bottom,
+                      left: defaultPadding.left,
+                      right: defaultPadding.right,
+                      bottom: defaultPadding.bottom,
                     )
-                  : padding,
+                  : defaultPadding,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
