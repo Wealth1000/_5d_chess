@@ -288,16 +288,26 @@ class Game {
         }
       }
     }
+
+    // Fallback: if no active timelines found, set present to 0
+    if (present == 999999) {
+      present = 0;
+    } else {
+      present = math.max(0, present);
+    }
+
+    // Update lastTimelineCount for animation tracking
+    lastTimelineCount = [timelineCount[0], timelineCount[1]];
   }
 
-  /// Find all checks on the board
+  /// Find all checks on the board (cross-timeline check detection)
   ///
-  /// Returns true if any king is in check
+  /// Returns true if any king is in check by pieces from any timeline.
   bool findChecks() {
     bool hasChecks = false;
     displayedChecks = [];
 
-    // Check all timelines
+    // Check all timelines for boards with matching turn
     for (final timelineDirection in timelines) {
       for (final timeline in timelineDirection) {
         if (!timeline.isActive) continue;
@@ -307,22 +317,32 @@ class Game {
 
         // Check if this board's turn matches current turn
         if (currentBoard.turn == turn) {
-          // Check if king is in check
-          final inCheck = CheckDetector.isKingInCheck(currentBoard, turn);
+          // Check if king is in check (cross-timeline: checks pieces from ALL timelines)
+          final inCheck = CheckDetector.isKingInCheckCrossTimeline(
+            this,
+            currentBoard,
+            turn,
+          );
+
           if (inCheck) {
             hasChecks = true;
             currentBoard.imminentCheck = true;
 
             // Find king position for display
+            // The cross-timeline check detection already found the check,
+            // so we just need to store the king position for UI display
             for (int x = 0; x < 8; x++) {
               for (int y = 0; y < 8; y++) {
                 final piece = currentBoard.getPiece(x, y);
                 if (piece != null &&
                     piece.type == PieceType.king &&
                     piece.side == turn) {
+                  // Store king position for display
+                  // Attacking pieces will be found during rendering if needed
                   displayedChecks.add([
                     Vec4(x, y, currentBoard.l, currentBoard.t),
                   ]);
+                  break; // Only one king per side
                 }
               }
             }
@@ -395,10 +415,49 @@ class Game {
       timeGainedCap = players[turn].lastIncr;
     }
 
-    // Clear current turn moves
-    currentTurnMoves = [];
+    // Create null moves for timelines that didn't have moves made
+    // This ensures all active timelines advance to the next turn
+    final timelinesWithMoves = <int>{};
+    for (final move in currentTurnMoves) {
+      if (!move.nullMove && move.sourceBoard != null) {
+        timelinesWithMoves.add(move.sourceBoard!.l);
+      } else if (move.nullMove && move.l != null) {
+        timelinesWithMoves.add(move.l!);
+      }
+    }
 
-    // Update present
+    // Find active timelines that need null moves
+    final minL = -math.min(timelineCount[0], timelineCount[1] + 1);
+    final maxL = math.min(timelineCount[0] + 1, timelineCount[1]);
+
+    for (int l = minL; l <= maxL; l++) {
+      try {
+        final timeline = getTimeline(l);
+        if (!timeline.isActive) continue;
+
+        final currentBoard = timeline.getCurrentBoard();
+        if (currentBoard == null) continue;
+
+        // If this timeline didn't have a move and its turn matches current turn,
+        // create a null move to advance it
+        if (!timelinesWithMoves.contains(l) && currentBoard.turn == turn) {
+          final nullMove = Move.nullMove(
+            this,
+            currentBoard,
+            fastForward: fastForward,
+          );
+          currentTurnMoves.add(nullMove);
+        }
+      } catch (e) {
+        // Timeline doesn't exist, skip
+        continue;
+      }
+    }
+
+    // Clear current turn moves (they're now part of game history)
+    currentTurnMoves.clear();
+
+    // Update present (this will recalculate based on all timeline ends)
     movePresent(fastForward);
 
     // Advance turn
