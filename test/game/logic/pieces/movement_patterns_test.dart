@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chess_5d/game/logic/piece.dart';
 import 'package:chess_5d/game/logic/board.dart';
-import 'package:chess_5d/game/logic/position.dart';
 import 'package:chess_5d/game/logic/pieces/movement_patterns.dart';
 
 // Mock Game class for testing
