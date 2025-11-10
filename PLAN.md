@@ -148,21 +148,29 @@ This plan outlines the implementation of core 5D Chess mechanics based on the Mu
   - `game: Game`
   - `sourceBoard: Board?` (board move starts from)
   - `targetBoard: Board?` (board move ends on)
-  - `from: Vec4?` (source position)
-  - `to: Vec4?` (destination position)
+  - `from: Vec4?` (source position, null only for null moves)
+  - `to: Vec4?` (destination position, null only for null moves)
+  - `sourcePiece: Piece?` (source piece, null only for null moves)
   - `isInterDimensionalMove: bool` (move across timelines)
-  - `nullMove: bool` (no piece movement, just board creation)
+  - `nullMove: bool` (internal game mechanic for timeline advancement)
   - `remoteMove: bool` (move from remote player)
   - `promote: int?` (pawn promotion: 1=Queen, 2=Knight, 3=Rook, 4=Bishop)
   - `usedBoards: List<Board>` (boards that become inactive)
   - `createdBoards: List<Board>` (boards created by this move)
-  - `l: int?` (for null moves, which timeline)
+  - `l: int?` (for null moves, which timeline to advance)
   
 **Key Methods**:
-- `Move(Game, Piece? sourcePiece, Vec4? targetPos, int? promotionTo, bool remoteMove, bool fastForward)`
-- `Move.nullMove(Game, Board)` (create null move)
+- `Move(Game, Piece sourcePiece, Vec4 targetPos, int? promotionTo, bool remoteMove, bool fastForward)` - Regular move (requires both sourcePiece and targetPos)
+- `Move._nullMove(Game, int timelineIndex, bool remoteMove)` - Private constructor for null moves
+- `Move.nullMove(Game, Board)` - Factory to create null move (internal game mechanic)
 - `undo(): void` (undo this move)
 - `serialize(): Map<String, dynamic>` (serialize for network/undo)
+
+**Important Notes**:
+- **Regular moves** MUST have both `sourcePiece` and `targetPos` (non-nullable)
+- **Null moves** are internal game mechanics used during `submit()` to advance timelines when no piece moves were made on that timeline
+- Null moves are NOT player actions - they are created automatically by the game engine
+- Null moves create a new board state (copy of previous board) for the next turn on a timeline
 
 ### 1.6 Player (`lib/game/logic/player.dart`)
 
