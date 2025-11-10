@@ -10,7 +10,6 @@ import 'package:chess_5d/game/logic/position.dart';
 /// - Null move: Internal mechanism to create a new board without moving a piece
 ///   (used for turn advancement when no moves were made on a timeline)
 class Move {
-
   /// Create a regular move (requires both sourcePiece and targetPos)
   ///
   /// [game] - The game this move belongs to
@@ -114,6 +113,7 @@ class Move {
       );
     }
   }
+
   /// The game this move belongs to
   dynamic game; // Game class (forward reference)
 

@@ -1,11 +1,11 @@
 import 'package:chess_5d/game/logic/position.dart';
+import 'package:chess_5d/game/logic/pieces/movement_patterns.dart';
 
 /// Abstract base class for chess pieces
 ///
 /// This class provides the foundation for all piece types.
 /// Pieces are associated with a Game and Board, and track their position.
 abstract class BasePiece {
-
   BasePiece({
     required this.game,
     required this.board,
@@ -13,6 +13,7 @@ abstract class BasePiece {
     required this.x,
     required this.y,
   });
+
   /// The game this piece belongs to
   dynamic game; // Game class (forward reference, will be defined later)
 
@@ -157,6 +158,33 @@ class Piece extends BasePiece {
     );
     clonedPiece.hasMoved = hasMoved;
     newBoard.pieces[x][y] = clonedPiece;
+  }
+
+  /// Override enumerateMoves to implement piece-specific movement patterns
+  ///
+  /// Delegates to MovementPatterns based on piece type.
+  @override
+  List<Vec4> enumerateMoves([int? targetL]) {
+    if (board == null) {
+      return [];
+    }
+
+    switch (type) {
+      case PieceType.pawn:
+        return MovementPatterns.getPawnMoves(this, board!, targetL);
+      case PieceType.rook:
+        return MovementPatterns.getRookMoves(this, board!, targetL);
+      case PieceType.knight:
+        return MovementPatterns.getKnightMoves(this, board!, targetL);
+      case PieceType.bishop:
+        return MovementPatterns.getBishopMoves(this, board!, targetL);
+      case PieceType.queen:
+        return MovementPatterns.getQueenMoves(this, board!, targetL);
+      case PieceType.king:
+        return MovementPatterns.getKingMoves(this, board!, targetL);
+      default:
+        return [];
+    }
   }
 }
 
