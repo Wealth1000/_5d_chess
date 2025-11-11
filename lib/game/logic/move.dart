@@ -210,28 +210,58 @@ class Move {
       throw StateError('Source piece not found on source board');
     }
 
-    if (targetBoard == null) {
+    final finalTargetBoard = targetBoard;
+    if (finalTargetBoard == null) {
       throw StateError('Target board is null');
     }
 
-    if (promote != null) {
-      // Handle promotion (will be fully implemented in a later phase)
-      // For now, just move the piece
-      sourcePieceOnSourceBoard.changePosition(
-        targetBoard,
-        targetPos.x,
-        targetPos.y,
-        sourceBoard: sourceBoardOriginal,
-        sourcePiece: sourcePiece,
+    final finalSourcePiece = sourcePiece;
+    if (promote != null && finalSourcePiece != null) {
+      // Handle promotion: remove the pawn and create the promoted piece
+      // First, remove the pawn from the source board
+      sourcePieceOnSourceBoard.remove();
+
+      // Determine the promoted piece type
+      String promotedType;
+      switch (promote) {
+        case 1:
+          promotedType = PieceType.queen;
+          break;
+        case 2:
+          promotedType = PieceType.knight;
+          break;
+        case 3:
+          promotedType = PieceType.rook;
+          break;
+        case 4:
+          promotedType = PieceType.bishop;
+          break;
+        default:
+          promotedType = PieceType.queen; // Default to queen
+      }
+
+      // Create the promoted piece on the target board
+      final promotedPiece = Piece(
+        game: game,
+        board: finalTargetBoard,
+        side: finalSourcePiece.side,
+        x: targetPos.x,
+        y: targetPos.y,
+        type: promotedType,
       );
+      promotedPiece.hasMoved = true; // Promoted piece has moved
+      _promotedPiece = promotedPiece;
+
+      // Place the promoted piece on the target board
+      finalTargetBoard.setPiece(targetPos.x, targetPos.y, promotedPiece);
     } else {
       // Normal move
       sourcePieceOnSourceBoard.changePosition(
-        targetBoard,
+        finalTargetBoard,
         targetPos.x,
         targetPos.y,
         sourceBoard: sourceBoardOriginal,
-        sourcePiece: sourcePiece,
+        sourcePiece: finalSourcePiece,
       );
     }
 
@@ -364,6 +394,9 @@ class Move {
 
   /// Boards created by this move
   List<Board> createdBoards;
+
+  /// Promoted piece (if this move involved promotion)
+  Piece? _promotedPiece;
 
   /// Timeline index (for null moves, specifies which timeline to advance)
   int? l;

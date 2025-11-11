@@ -1,13 +1,14 @@
 import 'dart:math' as math;
 import 'package:chess_5d/game/logic/board.dart';
-import 'package:chess_5d/game/logic/board_setup.dart';
 import 'package:chess_5d/game/logic/check_detector.dart';
+import 'package:chess_5d/game/logic/checkmate/simple_checkmate_detector.dart';
 import 'package:chess_5d/game/logic/game_options.dart';
 import 'package:chess_5d/game/logic/move.dart';
 import 'package:chess_5d/game/logic/piece.dart';
 import 'package:chess_5d/game/logic/player.dart';
 import 'package:chess_5d/game/logic/position.dart';
 import 'package:chess_5d/game/logic/timeline.dart';
+import 'package:chess_5d/game/logic/variants/variant_factory.dart';
 
 /// Main game state manager
 ///
@@ -46,12 +47,10 @@ class Game {
     turnZeroBoard.makeInactive();
     getTimeline(0).setBoard(-1, turnZeroBoard);
 
-    // Create initial board at t=0
-    final initialBoard = instantiateBoard(0, 0, turn, null, true);
+    // Create initial board at t=0 using variant system
+    final variant = VariantFactory.createVariant(options.variant);
+    final initialBoard = variant.createInitialBoard(this, 0, 0, turn);
     getTimeline(0).setBoard(0, initialBoard);
-
-    // Setup initial board with pieces
-    BoardSetup.setupStandardChessBoard(initialBoard, this);
 
     // Load moves from options if provided (for replay)
     // Note: Move deserialization will be implemented in a later phase
@@ -664,6 +663,33 @@ class Game {
 
     findChecks();
     checkSubmitAvailable();
+  }
+
+  /// Check if the current player is in checkmate
+  ///
+  /// Uses SimpleCheckmateDetector for reliable checkmate detection.
+  ///
+  /// Returns true if the current player is in checkmate.
+  bool isCheckmate() {
+    return SimpleCheckmateDetector.isCheckmate(this);
+  }
+
+  /// Check if the current player is in stalemate
+  ///
+  /// Uses SimpleCheckmateDetector for reliable stalemate detection.
+  ///
+  /// Returns true if the current player is in stalemate.
+  bool isStalemate() {
+    return SimpleCheckmateDetector.isStalemate(this);
+  }
+
+  /// Check if the current player has any legal moves
+  ///
+  /// Uses SimpleCheckmateDetector for reliable move detection.
+  ///
+  /// Returns true if the current player has at least one legal move.
+  bool hasLegalMoves() {
+    return SimpleCheckmateDetector.hasLegalMoves(this);
   }
 
   /// End the game

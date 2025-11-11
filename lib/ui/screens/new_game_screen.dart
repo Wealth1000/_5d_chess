@@ -1,5 +1,9 @@
 import 'package:chess_5d/core/utils.dart';
 import 'package:chess_5d/core/constants.dart';
+import 'package:chess_5d/game/state/game_provider.dart';
+import 'package:chess_5d/game/logic/game_options.dart';
+import 'package:chess_5d/ui/screens/game_screen.dart';
+import 'package:chess_5d/ui/utils/game_options_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -92,6 +96,55 @@ class _NewGameScreenState extends State<NewGameScreen> {
         );
       },
     );
+  }
+
+  /// Start a new game with the selected options
+  void _startGame(BuildContext context) {
+    try {
+      // Validate variant
+      if (!GameOptionsHelper.isValidVariant(_selectedVariant)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Invalid variant: $_selectedVariant',
+              style: GoogleFonts.inter(),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Create game options
+      final gameOptions = GameOptionsHelper.createGameOptions(
+        variantString: _selectedVariant,
+        timeControlString: _selectedTimeControl,
+        gameMode: _selectedMode,
+      );
+
+      // Create game provider
+      final localPlayer = GameOptionsHelper.getLocalPlayerFlags(_selectedMode);
+      final gameProvider = GameProvider(
+        options: gameOptions,
+        localPlayer: localPlayer,
+      );
+
+      // Navigate to game screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GameScreen(gameProvider: gameProvider),
+        ),
+      );
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error starting game: $e', style: GoogleFonts.inter()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -263,19 +316,7 @@ class _NewGameScreenState extends State<NewGameScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Starting $_selectedMode game with $_selectedTimeControl and $_selectedVariant',
-                                  style: GoogleFonts.inter(),
-                                ),
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.secondary,
-                              ),
-                            );
-                          },
+                          onPressed: () => _startGame(context),
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(
                               vertical: spacing * 1.2,
@@ -354,7 +395,6 @@ class _NewGameScreenState extends State<NewGameScreen> {
 }
 
 class _TimeControlDialog extends StatelessWidget {
-
   const _TimeControlDialog({
     required this.timeControls,
     required this.selected,
@@ -429,7 +469,6 @@ class _TimeControlDialog extends StatelessWidget {
 }
 
 class _VariantDialog extends StatelessWidget {
-
   const _VariantDialog({
     required this.variants,
     required this.selected,

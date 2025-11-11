@@ -30,7 +30,7 @@ void main() {
       expect(whiteRook.side, PieceSide.white);
 
       // Test that cross-timeline check detection can be called
-      final kingPos = Vec4(4, 7, 0, 0);
+      const kingPos = Vec4(4, 7, 0, 0);
       final inCheck = CheckDetector.isSquareAttackedCrossTimeline(
         game,
         kingPos,
@@ -52,8 +52,8 @@ void main() {
         final board0 = timeline0.getBoard(0)!;
 
         // Test cross-timeline check detection on initial board
-        final whiteKingPos = Vec4(4, 7, 0, 0);
-        final blackKingPos = Vec4(4, 0, 0, 0);
+        const whiteKingPos = Vec4(4, 7, 0, 0);
+        const blackKingPos = Vec4(4, 0, 0, 0);
 
         // Check if white king is in check (should not be initially)
         final whiteKingInCheck = CheckDetector.isKingInCheckCrossTimeline(
