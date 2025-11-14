@@ -51,7 +51,7 @@ void main() {
     });
 
     test('should handle square tap', () {
-      final position = Vec4(0, 6, 0, 0); // White pawn position
+      const position = Vec4(0, 6, 0, 0); // White pawn position
       provider.handleSquareTap(position);
 
       // Should select the piece if it's the player's turn

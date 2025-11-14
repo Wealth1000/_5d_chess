@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:chess_5d/game/logic/piece.dart';
+import 'package:chess_5d/core/assets.dart';
 
 /// Utility class for rendering chess pieces
 ///
 /// Provides methods to get piece symbols, colors, and rendering properties.
 class PieceRenderer {
-  /// Unicode chess symbols for pieces
+  /// Unicode chess symbols for pieces (fallback)
   static const Map<String, Map<int, String>> pieceSymbols = {
     PieceType.king: {PieceSide.black: '♚', PieceSide.white: '♔'},
     PieceType.queen: {PieceSide.black: '♛', PieceSide.white: '♕'},
@@ -15,9 +16,73 @@ class PieceRenderer {
     PieceType.pawn: {PieceSide.black: '♟', PieceSide.white: '♙'},
   };
 
-  /// Get the Unicode symbol for a piece
+  /// Get the Unicode symbol for a piece (fallback rendering)
   static String getPieceSymbol(Piece piece) {
     return pieceSymbols[piece.type]?[piece.side] ?? '?';
+  }
+
+  /// Get the asset path for a primary chess piece SVG
+  static String getPrimaryAssetPath(Piece piece) {
+    final isWhite = piece.side == PieceSide.white;
+    switch (piece.type) {
+      case PieceType.king:
+        return isWhite
+            ? ChessPieces.primaryWhiteKing
+            : ChessPieces.primaryBlackKing;
+      case PieceType.queen:
+        return isWhite
+            ? ChessPieces.primaryWhiteQueen
+            : ChessPieces.primaryBlackQueen;
+      case PieceType.rook:
+        return isWhite
+            ? ChessPieces.primaryWhiteRook
+            : ChessPieces.primaryBlackRook;
+      case PieceType.bishop:
+        return isWhite
+            ? ChessPieces.primaryWhiteBishop
+            : ChessPieces.primaryBlackBishop;
+      case PieceType.knight:
+        return isWhite
+            ? ChessPieces.primaryWhiteKnight
+            : ChessPieces.primaryBlackKnight;
+      case PieceType.pawn:
+      default:
+        return isWhite
+            ? ChessPieces.primaryWhitePawn
+            : ChessPieces.primaryBlackPawn;
+    }
+  }
+
+  /// Get the asset path for a secondary chess piece SVG
+  static String getSecondaryAssetPath(Piece piece) {
+    final isWhite = piece.side == PieceSide.white;
+    switch (piece.type) {
+      case PieceType.king:
+        return isWhite
+            ? ChessPieces.secondaryWhiteKing
+            : ChessPieces.secondaryBlackKing;
+      case PieceType.queen:
+        return isWhite
+            ? ChessPieces.secondaryWhiteQueen
+            : ChessPieces.secondaryBlackQueen;
+      case PieceType.rook:
+        return isWhite
+            ? ChessPieces.secondaryWhiteRook
+            : ChessPieces.secondaryBlackRook;
+      case PieceType.bishop:
+        return isWhite
+            ? ChessPieces.secondaryWhiteBishop
+            : ChessPieces.secondaryBlackBishop;
+      case PieceType.knight:
+        return isWhite
+            ? ChessPieces.secondaryWhiteKnight
+            : ChessPieces.secondaryBlackKnight;
+      case PieceType.pawn:
+      default:
+        return isWhite
+            ? ChessPieces.secondaryWhitePawn
+            : ChessPieces.secondaryBlackPawn;
+    }
   }
 
   /// Get the color for a piece

@@ -106,18 +106,25 @@ class _GameSceneState extends State<GameScene> {
     // Build arrows from game state
     final arrows = _buildArrows();
 
-    return Column(
-      children: [
-        // Game info
-        _buildGameInfo(presentTurn),
+    // If no timelines, show empty state
+    if (timelines.isEmpty) {
+      return Center(
+        child: Text(
+          'No timelines available',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+      );
+    }
 
-        // Timeline views
-        Expanded(
-          child: ListView.builder(
-            itemCount: timelines.length,
-            itemBuilder: (context, index) {
-              final timeline = timelines[index];
-              return TimelineView(
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Timeline views
+          ...timelines.map((timeline) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: TimelineView(
                 timeline: timeline,
                 presentTurn: presentTurn,
                 selectedTurn: _selectedTurn,
@@ -132,11 +139,11 @@ class _GameSceneState extends State<GameScene> {
                 },
                 onSquareTapped: _handleSquareTap,
                 boardSize: widget.boardSize,
-              );
-            },
-          ),
-        ),
-      ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
     );
   }
 

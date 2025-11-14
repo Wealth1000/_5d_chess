@@ -78,7 +78,8 @@ class TimelineView extends StatelessWidget {
     final boards = <Board>[];
     for (int t = timeline.start; t <= timeline.end; t++) {
       final board = timeline.getBoard(t);
-      if (board != null) {
+      // Only show boards from turn 0 onwards, and only active boards
+      if (board != null && t >= 0 && board.active && !board.deleted) {
         boards.add(board);
       }
     }
@@ -98,110 +99,105 @@ class TimelineView extends StatelessWidget {
 
         // Scrollable board list
         SizedBox(
-          height: boardSize + (showPresentIndicator ? 40 : 0),
-          child: Stack(
-            children: [
-              // Board list
-              ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: boards.length,
-                itemBuilder: (context, index) {
-                  final board = boards[index];
-                  final isSelected =
-                      selectedTurn != null && board.t == selectedTurn;
-                  final isPresent = board.t == presentTurn;
+          height: boardSize + (showTurnNumbers ? 40 : 0) + 16,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            itemCount: boards.length,
+            itemBuilder: (context, index) {
+              final board = boards[index];
+              final isSelected =
+                  selectedTurn != null && board.t == selectedTurn;
+              final isPresent = board.t == presentTurn;
 
-                  return Container(
-                    margin: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: isSelected
-                            ? Colors.blue
-                            : isPresent
-                            ? Colors.green
-                            : Colors.transparent,
-                        width: isSelected || isPresent ? 2 : 0,
+              // Determine turn-based border color
+              // White outline for white's turn, black outline for black's turn
+              final currentTurn = board.turn;
+              Color borderColor = currentTurn == 1
+                  ? Colors.white
+                  : Colors.black;
+
+              if (isPresent) {
+                borderColor = Colors.green;
+              }
+
+              if (isSelected) {
+                borderColor = Theme.of(context).colorScheme.primary;
+              }
+
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Turn label
-                        if (showTurnNumbers)
-                          Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Text(
-                              'Turn ${board.t}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isPresent
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isPresent ? Colors.green : null,
+                      if (isSelected)
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                        ),
+                    ],
+                  ),
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(12),
+                    color: Theme.of(context).colorScheme.surface,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: borderColor, width: 3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Turn label
+                          if (showTurnNumbers)
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(
+                                'Turn ${board.t}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isPresent
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isPresent ? Colors.green : null,
+                                ),
                               ),
                             ),
-                          ),
 
-                        // Board widget
-                        GestureDetector(
-                          onTap: () => onBoardSelected?.call(board.t),
-                          child: BoardWidget(
-                            board: board,
-                            selectedSquare: selectedSquare,
-                            legalMoves: legalMoves,
-                            highlights: highlights,
-                            arrows: arrows,
-                            onSquareTapped: onSquareTapped,
-                            size: boardSize,
-                            coordinatesVisible: false,
+                          // Board widget
+                          GestureDetector(
+                            onTap: () => onBoardSelected?.call(board.t),
+                            child: BoardWidget(
+                              board: board,
+                              selectedSquare: selectedSquare,
+                              legalMoves: legalMoves,
+                              highlights: highlights,
+                              arrows: arrows,
+                              onSquareTapped: onSquareTapped,
+                              size: boardSize,
+                              coordinatesVisible: false,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-
-              // Present indicator
-              if (showPresentIndicator)
-                Positioned(
-                  left: _getPresentPosition(boards, presentTurn, boardSize),
-                  top: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 2,
-                    color: Colors.green,
-                    child: const Center(
-                      child: Text(
-                        'Present',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-            ],
+              );
+            },
           ),
         ),
       ],
     );
-  }
-
-  /// Get the horizontal position of the present indicator
-  double _getPresentPosition(
-    List<Board> boards,
-    int presentTurn,
-    double boardSize,
-  ) {
-    for (int i = 0; i < boards.length; i++) {
-      if (boards[i].t == presentTurn) {
-        return (i * (boardSize + 16)) + (boardSize / 2) - 1;
-      }
-    }
-    return 0;
   }
 }

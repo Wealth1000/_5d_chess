@@ -4,7 +4,6 @@ import 'package:chess_5d/game/logic/board.dart';
 import 'package:chess_5d/game/logic/position.dart';
 import 'package:chess_5d/game/rendering/highlight.dart';
 import 'package:chess_5d/game/rendering/arrow.dart';
-import 'package:chess_5d/game/rendering/piece_renderer.dart';
 
 /// Custom painter for drawing chess boards
 ///
@@ -90,8 +89,7 @@ class BoardPainter extends CustomPainter {
     // Draw arrows
     _drawArrows(canvas, size, squareSize);
 
-    // Draw pieces
-    _drawPieces(canvas, size, squareSize);
+    // Pieces are rendered as overlay widgets in BoardWidget
 
     // Draw coordinates
     if (coordinatesVisible) {
@@ -345,28 +343,6 @@ class BoardPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, arrowPaint);
-  }
-
-  /// Draw pieces on the board
-  void _drawPieces(Canvas canvas, Size size, double squareSize) {
-    for (int x = 0; x < 8; x++) {
-      for (int y = 0; y < 8; y++) {
-        final piece = board.getPiece(x, y);
-        if (piece == null) continue;
-
-        final displayX = flipBoard ? 7 - x : x;
-        final displayY = flipBoard ? 7 - y : y;
-
-        final rect = Rect.fromLTWH(
-          displayX * squareSize,
-          displayY * squareSize,
-          squareSize,
-          squareSize,
-        );
-
-        PieceRenderer.paintPiece(canvas, piece, rect, 1.0);
-      }
-    }
   }
 
   /// Draw coordinates on the board

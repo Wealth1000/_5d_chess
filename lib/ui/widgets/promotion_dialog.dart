@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:chess_5d/game/logic/piece.dart';
-import 'package:chess_5d/game/rendering/piece_renderer.dart';
 import 'package:chess_5d/core/utils.dart';
 import 'package:chess_5d/core/constants.dart';
 
