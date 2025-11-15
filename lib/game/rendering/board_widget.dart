@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:chess_5d/game/logic/board.dart';
 import 'package:chess_5d/game/logic/position.dart';
 import 'package:chess_5d/game/rendering/board_painter.dart';
 import 'package:chess_5d/game/rendering/highlight.dart';
 import 'package:chess_5d/game/rendering/arrow.dart';
+import 'package:chess_5d/game/rendering/piece_renderer.dart';
 
 /// Widget for displaying a chess board
 ///
@@ -67,16 +69,23 @@ class BoardWidget extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final boardSize = size ?? constraints.maxWidth;
+        final squareSize = boardSize / 8;
 
         return GestureDetector(
           onTapDown: (details) async {
+            // Only handle taps on empty squares (pieces handle their own taps)
             if (onSquareTapped != null) {
               final square = _getSquareFromPosition(
                 details.localPosition,
                 boardSize,
               );
               if (square != null) {
-                await onSquareTapped!(square);
+                // Check if there's a piece on this square
+                final piece = board.getPiece(square.x, square.y);
+                // Only handle if no piece (pieces have their own tap handlers)
+                if (piece == null) {
+                  await onSquareTapped!(square);
+                }
               }
             }
           },
@@ -91,23 +100,83 @@ class BoardWidget extends StatelessWidget {
               }
             }
           },
-          child: CustomPaint(
-            size: Size(boardSize, boardSize),
-            painter: BoardPainter(
-              board: board,
-              selectedSquare: selectedSquare,
-              legalMoves: legalMoves,
-              highlights: highlights,
-              arrows: arrows,
-              lightSquareColor: lightSquareColor ?? const Color(0xFFF0D9B5),
-              darkSquareColor: darkSquareColor ?? const Color(0xFFB58863),
-              coordinatesVisible: coordinatesVisible,
-              flipBoard: flipBoard,
+          child: SizedBox(
+            width: boardSize,
+            height: boardSize,
+            child: Stack(
+              children: [
+                // Board background (squares, highlights, arrows, coordinates)
+                CustomPaint(
+                  size: Size(boardSize, boardSize),
+                  painter: BoardPainter(
+                    board: board,
+                    selectedSquare: selectedSquare,
+                    legalMoves: legalMoves,
+                    highlights: highlights,
+                    arrows: arrows,
+                    lightSquareColor:
+                        lightSquareColor ?? const Color(0xFFF0D9B5),
+                    darkSquareColor: darkSquareColor ?? const Color(0xFFB58863),
+                    coordinatesVisible: coordinatesVisible,
+                    flipBoard: flipBoard,
+                  ),
+                ),
+                // Pieces rendered as SVG widgets (each with its own tap handler)
+                ..._buildPieces(boardSize, squareSize),
+              ],
             ),
           ),
         );
       },
     );
+  }
+
+  /// Build widgets for all pieces on the board
+  List<Widget> _buildPieces(double boardSize, double squareSize) {
+    final pieces = <Widget>[];
+
+    for (int x = 0; x < 8; x++) {
+      for (int y = 0; y < 8; y++) {
+        final piece = board.getPiece(x, y);
+        if (piece == null) {
+          continue;
+        }
+
+        final displayX = flipBoard ? 7 - x : x;
+        final displayY = flipBoard ? 7 - y : y;
+
+        final left = displayX * squareSize;
+        final top = displayY * squareSize;
+
+        pieces.add(
+          Positioned(
+            left: left,
+            top: top,
+            width: squareSize,
+            height: squareSize,
+            child: GestureDetector(
+              onTap: () async {
+                if (onSquareTapped != null) {
+                  final square = Vec4(x, y, board.l, board.t);
+                  await onSquareTapped!(square);
+                }
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Center(
+                child: SvgPicture.asset(
+                  PieceRenderer.getPrimaryAssetPath(piece),
+                  fit: BoxFit.contain,
+                  width: squareSize * 0.85,
+                  height: squareSize * 0.85,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return pieces;
   }
 
   /// Get the square coordinates from a tap position

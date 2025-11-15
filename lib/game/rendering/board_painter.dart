@@ -89,7 +89,7 @@ class BoardPainter extends CustomPainter {
     // Draw arrows
     _drawArrows(canvas, size, squareSize);
 
-    // Pieces are rendered as overlay widgets in BoardWidget
+    // Pieces are rendered as SVG widgets in BoardWidget, not on Canvas
 
     // Draw coordinates
     if (coordinatesVisible) {
@@ -199,36 +199,26 @@ class BoardPainter extends CustomPainter {
       canvas.drawRect(rect, paint);
     }
 
-    // Draw legal move indicators if not in highlights
+    // Draw legal move highlights (same style as selected square, only for pawns)
+    // Show moves on current board or next turn (since moves target next turn)
     for (final move in legalMoves) {
-      if (move.l != board.l || move.t != board.t) {
-        continue; // Skip moves not on this board
+      if (move.l != board.l || (move.t != board.t && move.t != board.t + 1)) {
+        continue;
       }
-
-      // Check if already highlighted
-      final alreadyHighlighted = highlights.any(
-        (h) =>
-            h.position.x == move.x &&
-            h.position.y == move.y &&
-            h.position.l == move.l &&
-            h.position.t == move.t,
-      );
-
-      if (alreadyHighlighted) continue;
 
       final x = flipBoard ? 7 - move.x : move.x;
       final y = flipBoard ? 7 - move.y : move.y;
 
-      final center = Offset(
-        x * squareSize + squareSize / 2,
-        y * squareSize + squareSize / 2,
+      final rect = Rect.fromLTWH(
+        x * squareSize,
+        y * squareSize,
+        squareSize,
+        squareSize,
       );
 
-      // Draw circle indicator for legal moves
-      final paint = Paint()
-        ..color = legalMoveColor
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(center, squareSize * 0.15, paint);
+      // Use the same highlight style as selected square
+      final paint = Paint()..color = selectedSquareColor;
+      canvas.drawRect(rect, paint);
     }
   }
 

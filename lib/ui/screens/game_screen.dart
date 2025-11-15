@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:chess_5d/game/state/game_provider.dart';
 import 'package:chess_5d/core/theme_provider.dart';
+import 'package:chess_5d/game/logic/board.dart';
+import 'package:chess_5d/game/logic/board_setup.dart';
+import 'package:chess_5d/game/logic/position.dart';
+import 'package:chess_5d/game/rendering/board_widget.dart';
 
 /// Mobile-friendly game screen matching the parallel view layout.
 class GameScreen extends StatelessWidget {
@@ -51,12 +55,10 @@ class GameScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // Main content area (full screen) with checkered background
-            SizedBox.expand(
-              child: CustomPaint(painter: _CheckeredBackgroundPainter()),
-            ),
+            // Scrollable content area with checkered background and boards
+            _BlankBoardsView(gameProvider: gameProvider),
 
-            // View mode buttons on top (at the top)
+            // Fixed view mode buttons at the top
             Align(
               alignment: Alignment.topCenter,
               child: Padding(
@@ -65,12 +67,12 @@ class GameScreen extends StatelessWidget {
               ),
             ),
 
-            // Bottom action buttons on top (at the bottom)
+            // Fixed bottom action buttons at the bottom
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
-                child: _BottomActions(),
+                child: _BottomActions(gameProvider: gameProvider),
               ),
             ),
           ],
@@ -165,6 +167,10 @@ class _ViewButton extends StatelessWidget {
 
 /// Bottom action buttons
 class _BottomActions extends StatelessWidget {
+  const _BottomActions({required this.gameProvider});
+
+  final GameProvider gameProvider;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -172,20 +178,24 @@ class _BottomActions extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _ActionButton(
-            label: 'Undo Move',
-            color: Colors.black,
-            onTap: () {
-              // TODO: Implement undo move logic
-            },
+          Expanded(
+            child: _ActionButton(
+              label: 'Undo Move',
+              color: Colors.grey[800]!,
+              onTap: () {
+                gameProvider.undoMove();
+              },
+            ),
           ),
           const SizedBox(width: 16),
-          _ActionButton(
-            label: 'Submit Moves',
-            color: Colors.black,
-            onTap: () {
-              // TODO: Implement submit moves logic
-            },
+          Expanded(
+            child: _ActionButton(
+              label: 'Submit Moves',
+              color: Colors.grey[800]!,
+              onTap: () {
+                gameProvider.submitMoves();
+              },
+            ),
           ),
         ],
       ),
@@ -193,23 +203,188 @@ class _BottomActions extends StatelessWidget {
   }
 }
 
-/// Checkered background painter
+/// View for displaying blank boards with scrollable and zoomable background
+class _BlankBoardsView extends StatefulWidget {
+  const _BlankBoardsView({required this.gameProvider});
+
+  final GameProvider gameProvider;
+
+  @override
+  State<_BlankBoardsView> createState() => _BlankBoardsViewState();
+}
+
+class _BlankBoardsViewState extends State<_BlankBoardsView> {
+  final TransformationController _transformationController =
+      TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to game provider changes
+    widget.gameProvider.addListener(_onGameStateChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.gameProvider.removeListener(_onGameStateChanged);
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  void _onGameStateChanged() {
+    setState(() {
+      // Rebuild when game state changes
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Get the actual board from the game (main timeline, turn 0)
+    final timeline = widget.gameProvider.game.getTimeline(0);
+    final board = timeline.getBoard(0);
+
+    if (board == null) {
+      // Fallback: create initial board if not found
+      final fallbackBoard = BoardSetup.createInitialBoard(
+        widget.gameProvider.game,
+        0,
+        0,
+        1,
+      );
+      return _buildBoardView(fallbackBoard);
+    }
+
+    return _buildBoardView(board);
+  }
+
+  Widget _buildBoardView(Board board) {
+    // Get selected piece and legal moves from game provider
+    final selectedPiece = widget.gameProvider.selectedPiece;
+    final legalMoves = widget.gameProvider.legalMoves;
+    final currentTurn = widget.gameProvider.turn; // 0 = black, 1 = white
+
+    // Convert selected piece to Vec4 position if it exists
+    Vec4? selectedSquare;
+    if (selectedPiece != null && selectedPiece.board == board) {
+      selectedSquare = Vec4(selectedPiece.x, selectedPiece.y, board.l, board.t);
+    }
+
+    // Filter legal moves to only show moves on this board (or next turn on same timeline)
+    // In 5D chess, moves are to the next turn, so we show moves that will happen on this timeline
+    final boardLegalMoves = legalMoves.where((move) {
+      return move.l == board.l && (move.t == board.t || move.t == board.t + 1);
+    }).toList();
+
+    // Determine outline color based on current turn
+    // White's turn (1) = white outline, Black's turn (0) = black outline
+    final outlineColor = currentTurn == 1 ? Colors.white : Colors.black;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate content size for centered board
+        final contentWidth = constraints.maxWidth > 0
+            ? constraints.maxWidth
+            : MediaQuery.of(context).size.width;
+        final contentHeight = constraints.maxHeight > 0
+            ? constraints.maxHeight
+            : MediaQuery.of(context).size.height;
+
+        return InteractiveViewer(
+          transformationController: _transformationController,
+          minScale: 0.5,
+          maxScale: 4.0,
+          panEnabled: true,
+          scaleEnabled: true,
+          boundaryMargin: const EdgeInsets.all(double.infinity),
+          child: SizedBox(
+            width: contentWidth,
+            height: contentHeight,
+            child: Stack(
+              children: [
+                // Infinite checkered background that fills the zoomable area
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: const _CheckeredBackgroundPainter(
+                      squareSize: 40.0,
+                    ),
+                  ),
+                ),
+                // Single board with pieces, centered
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8.0),
+                      border: Border.all(color: outlineColor, width: 3.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4.0,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: SizedBox(
+                      width: 300,
+                      height: 300,
+                      child: BoardWidget(
+                        board: board,
+                        selectedSquare: selectedSquare,
+                        legalMoves: boardLegalMoves,
+                        onSquareTapped: _handleSquareTap,
+                        coordinatesVisible: true,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleSquareTap(Vec4 position) async {
+    widget.gameProvider.handleSquareTap(position);
+  }
+}
+
+/// Infinite checkered background painter
+///
+/// Draws an endless checkered pattern by painting squares far beyond
+/// the visible area, making it appear infinite even when zooming out.
 class _CheckeredBackgroundPainter extends CustomPainter {
+  const _CheckeredBackgroundPainter({this.squareSize = 40.0});
+
+  final double squareSize;
+
   @override
   void paint(Canvas canvas, Size size) {
+    // Very large padding so zoom out never shows the end
+    const double padding = 5000.0;
+
     const lightGrey = Color(0xFFE0E0E0);
     const lighterGrey = Color(0xFFF0F0F0);
-    const squareSize = 40.0;
 
-    final paint1 = Paint()..color = lightGrey;
-    final paint2 = Paint()..color = lighterGrey;
+    final lightPaint = Paint()..color = lightGrey;
+    final darkPaint = Paint()..color = lighterGrey;
 
-    for (double y = 0; y < size.height; y += squareSize) {
-      for (double x = 0; x < size.width; x += squareSize) {
-        final rect = Rect.fromLTWH(x, y, squareSize, squareSize);
-        final isLight =
+    // Draw an extremely large region around the visible canvas
+    final double left = -padding;
+    final double top = -padding;
+    final double right = size.width + padding;
+    final double bottom = size.height + padding;
+
+    for (double y = top; y < bottom; y += squareSize) {
+      for (double x = left; x < right; x += squareSize) {
+        final isDark =
             ((x / squareSize).floor() + (y / squareSize).floor()) % 2 == 0;
-        canvas.drawRect(rect, isLight ? paint1 : paint2);
+        canvas.drawRect(
+          Rect.fromLTWH(x, y, squareSize, squareSize),
+          isDark ? darkPaint : lightPaint,
+        );
       }
     }
   }
@@ -245,6 +420,7 @@ class _ActionButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
           child: Text(
             label,
+            textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w500,
